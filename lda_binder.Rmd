@@ -1,11 +1,25 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: "lda_binder_r"
+output: html_document
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
 ```{r}
 library(phyloseq)
-setwd("~/Desktop/LDA-binder/")
+library('topicmodels')
+library('reshape2')
+library('dplyr')
+library('bbmle')
+library('ggplot2')
+library('tidytext')
+library('data.table')
+```
+
+```{r}
+
 otu_table<-read.csv("count_table.csv", sep=",",row.names=1)
 otu_table<-as.matrix(otu_table)
 otu_table
@@ -17,30 +31,10 @@ physeq<-merge_phyloseq(tax,otu)
 otu_table(physeq)
 rank_names(physeq)
 melt<-psmelt(physeq)
-melt
 write.csv(melt, "melt.csv")
 ```
 
 ```{r}
- #-------------------------------------------------------------
-
-### Data exploration of Ptarmigan gut microbiome
-
-#-------------------------------------------------------------
-
-# Load libraries
-install.packages("topicmodels")
-install.packages("tidytext")
-library('topicmodels')
-library('reshape2')
-library('dplyr')
-library('bbmle')
-library('ggplot2')
-library('tidytext')
-library(tidyverse)
-library('data.table')
-
-#-------------------------------------------------------------
 
 #load genus level microbiom data
 ptarmiganGenus <- read.csv("melt.csv") # genus level resolution of microbiome
@@ -48,7 +42,6 @@ head(ptarmiganGenus)
 
 #convert from long to wide format
 ptarmiganGenus2 <- dcast(ptarmiganGenus, Sample~Genus, value.var="Abundance")
-df <- data.frame(df, row.names = 1)
 #query Stephanie on sample id's
 unique(ptarmiganGenus2$Sample)
 
@@ -77,25 +70,27 @@ AICtab(VEM3,VEM2,VEM4,VEM5,VEM6,VEM7)
 
 #get parameter estimates
 z=posterior(VEM2)
+z$topics
 commun.plot= as.data.frame(z$topics) #community proportions in each sample bird
 str(commun.plot)
+commun.plot
 commun.plot$Samples <-ptarmiganGenus2$Sample
-
-z
+commun.plot$Samples
 
 commun.spp=z$terms #probability of a species belonging to a community
 commun.spp
 # look at the specific assignment of species to a community
-tidy(VEM2)
 ap_lda_td <- data.table(tidy(VEM2))
-nrow(ap_lda_td[topic==1])
-
+ap_lda_td
+nrow(ap_lda_td[topic==2])
+ap_lda_td
 
 ap_top_terms <- ap_lda_td %>%
   group_by(topic) %>%
   top_n(10, beta) %>%
   ungroup() %>%
   arrange(topic, -beta)
+ap_top_terms
 
 ap_top_terms %>%
   mutate(term = reorder(term, beta)) %>%
@@ -104,30 +99,5 @@ ap_top_terms %>%
   facet_wrap(~ topic, scales = "free") +
   coord_flip() 
 
-
-ap_lda_td[topic==4][order(beta, decreasing=TRUE)][1:10] #beta is the prob. of a specific sp. belonging to community 1
-#modify the "topic==4" to see the different membership of microbiome to communities
-
-
-
-
-#-------------------------------------------------------------
-
-# look at the proportion of the communities in each unique sample
-
-ap_gamma <- data.table(tidy(VEM5, matrix = "gamma"))
-ap_gamma[document==16]
-ap_gamma$birdID <- rep(ptarmiganGenus2$sample,5)
-
-ap_gamma %>%
-  ggplot(aes(topic, gamma, fill = factor(birdID))) +
-  geom_bar(stat = "identity", show.legend = FALSE) +
-  facet_wrap(~ birdID, scales = "free") +
-  coord_flip() 
-
-
-```
-```{r}
-rm(list = ls())
 ```
 

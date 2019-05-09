@@ -1,8 +1,0 @@
-install.packages("topicmodels")
-install.packages("reshape2")
-install.packages("dplyr")
-install.packages("bbmle")
-install.packages("ggplot2")
-install.packages("tidytext")
-install.packages("data.table")
-install.packages("phyloseq")
