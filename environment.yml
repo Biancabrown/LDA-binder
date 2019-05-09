@@ -1,0 +1,15 @@
+name: example-environment
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - r-topicmodels
+  - r-reshape2
+  - r-dplyr
+  - r-bbmle
+  - r-ggplot2
+  - r-tidytext
+  - r-data.table
+  - bioconductor-phyloseq
+
+  
